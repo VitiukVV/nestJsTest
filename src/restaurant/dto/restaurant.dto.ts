@@ -1,14 +1,22 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
-  IsString,
   IsArray,
   IsBoolean,
   IsEmail,
+  IsEnum,
   IsNumber,
   IsOptional,
+  IsString,
   ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
+export enum PriceRange {
+  ONE = '$',
+  TWO = '$$',
+  THREE = '$$$',
+  FOUR = '$$$$',
+}
 
 export class ContactDto {
   @IsString()
@@ -64,6 +72,7 @@ export class AddressDto {
 }
 
 export class LocationDto {
+  @Type(() => Number)
   @IsNumber()
   @ApiProperty({
     description: 'Latitude coordinate',
@@ -72,6 +81,7 @@ export class LocationDto {
   })
   lat: number;
 
+  @Type(() => Number)
   @IsNumber()
   @ApiProperty({
     description: 'Longitude coordinate',
@@ -99,6 +109,7 @@ export class CreateRestaurantDto {
   cuisine: string[];
 
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   @ApiPropertyOptional({
     description: 'Restaurant rating (0-5)',
@@ -109,6 +120,7 @@ export class CreateRestaurantDto {
   rating?: number;
 
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   @ApiPropertyOptional({
     description: 'Number of reviews',
@@ -117,13 +129,13 @@ export class CreateRestaurantDto {
   })
   reviewsCount?: number;
 
-  @IsString()
+  @IsEnum(PriceRange)
   @ApiProperty({
     description: 'Price range indicator',
-    example: '$$',
-    enum: ['$', '$$', '$$$', '$$$$'],
+    example: PriceRange.TWO,
+    enum: PriceRange,
   })
-  priceRange: string;
+  priceRange: PriceRange;
 
   @ValidateNested()
   @Type(() => ContactDto)

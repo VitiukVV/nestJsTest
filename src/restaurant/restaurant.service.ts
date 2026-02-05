@@ -3,6 +3,9 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateRestaurantDto } from './dto/restaurant.dto';
 import { Restaurant } from './schema/restaurant.schema';
+import { flattenObject } from 'src/utils/flattenObject';
+import { UpdateRestaurantDto } from './dto/updateRestaurant.dto';
+
 @Injectable()
 export class RestaurantService {
   constructor(
@@ -26,21 +29,30 @@ export class RestaurantService {
     return restaurant;
   }
 
-  async deleteRestaurantById(id: string): Promise<Restaurant> {
+  async deleteRestaurantById(id: string): Promise<void> {
     const deleted = await this.restaurantModel.findByIdAndDelete(id);
     if (!deleted) throw new NotFoundException('Restaurant not found');
-    return deleted;
   }
 
   async updateRestaurantById(
     id: string,
-    data: Partial<CreateRestaurantDto>,
+    data: UpdateRestaurantDto,
   ): Promise<Restaurant> {
-    const updated = await this.restaurantModel.findByIdAndUpdate(id, data, {
-      new: true,
-      runValidators: true,
-    });
-    if (!updated) throw new NotFoundException('Restaurant not found');
+    const update = flattenObject(data);
+
+    const updated = await this.restaurantModel.findByIdAndUpdate(
+      id,
+      { $set: update },
+      {
+        new: true,
+        runValidators: true,
+      },
+    );
+
+    if (!updated) {
+      throw new NotFoundException('Restaurant not found');
+    }
+
     return updated;
   }
 }
